@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Voting App</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h1>🐾Vote for Your Favorite❤️!</h1>
+  <button onclick="vote('cats')">😺 Vote for Cats</button>
+  <button onclick="vote('dogs')">🐶 Vote for Dogs</button>
+  <button onclick="confirmReset()" class="reset">🔄 Reset Votes</button>
+  <button onclick="toggleHistory()">📜 View Vote History</button>
+
+  <div id="results">
+    <div class="progress-container">
+      <div class="progress-bar cat" id="catBar">😺 0%</div>
+    </div>
+    <div class="progress-container">
+      <div class="progress-bar dog" id="dogBar">🐶 0%</div>
+    </div>
+    <div class="vote-counts" id="voteCounts">Cats: 0 | Dogs: 0</div>
+  </div>
+
+  <div id="history" class="history"></div>
+
+  <script>
+    function vote(animal) {
+      fetch('/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vote: animal })
+      }).then(res => res.json()).then(updateResults);
+    }
+
+    function updateResults(data) {
+      document.getElementById('voteCounts').innerText =
+        `Cats: ${data.cats} | Dogs: ${data.dogs}`;
+      document.getElementById('catBar').style.width = data.cat_percent + '%';
+      document.getElementById('catBar').innerText = `😺 ${data.cat_percent}%`;
+      document.getElementById('dogBar').style.width = data.dog_percent + '%';
+      document.getElementById('dogBar').innerText = `🐶 ${data.dog_percent}%`;
+    }
+
+    function confirmReset() {
+      if (confirm("Are you sure you want to reset votes to 0?")) {
+        fetch('/reset', { method: 'POST' })
+          .then(res => res.json())
+          .then(data => {
+            updateResults(data);
+            document.getElementById('history').innerHTML = "";
+          });
+      }
+    }
+
+    function toggleHistory() {
+      fetch('/history')
+        .then(res => res.json())
+        .then(data => {
+          const div = document.getElementById('history');
+          if (data.history) {
+            div.innerHTML = `<h3>Vote History:</h3><p>${data.history}</p>`;
+          } else {
+            div.innerHTML = `<h3>Vote History:</h3><p>No vote history available.</p>`;
+          }
+        });
+    }
+
+    fetch('/results').then(res => res.json()).then(updateResults);
+  </script>
+</body>
+</html>
