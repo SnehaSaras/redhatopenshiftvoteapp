@@ -3,7 +3,8 @@ import redis
 from datetime import datetime
 
 app = Flask(__name__)
-r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+r = redis.Redis(host='redis', port=6379, decode_responses=True)
+
 
 # Initialize vote counts and reset history
 r.set('cats', 0)
